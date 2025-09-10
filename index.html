@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Smart Attendance — Smarter Classrooms</title>
+  <style>
+    :root{
+      --bg1:#a0e7e5;
+      --bg2:#b4f8c8;
+      --bg3:#fbe7c6;
+      --card:#ffffff;
+      --accent:#ff6f61;
+      --accent2:#6c63ff;
+    }
+    *{box-sizing:border-box;font-family:'Inter',system-ui,Arial,sans-serif}
+    body{
+      margin:0;
+      min-height:100vh;
+      background:linear-gradient(135deg,var(--bg1),var(--bg2),var(--bg3));
+      display:flex;
+      flex-direction:column;
+      color:#222;
+    }
+    header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:15px 30px;
+      background:rgba(255,255,255,0.6);
+      backdrop-filter:blur(6px);
+      position:sticky;
+      top:0;
+      z-index:50;
+    }
+    header h1{margin:0;font-size:22px;font-weight:700}
+    nav a{
+      margin-left:20px;
+      text-decoration:none;
+      color:#333;
+      font-weight:600;
+      padding:6px 10px;
+      border-radius:6px;
+      transition:background 0.2s ease;
+    }
+    nav a.active, nav a:hover{
+      background:linear-gradient(90deg,var(--accent),var(--accent2));
+      color:#fff;
+    }
+
+    .container{max-width:1100px;margin:20px auto;padding:20px}
+    .grid{display:flex;justify-content:space-around;gap:20px;flex-wrap:wrap}
+    .card{
+      flex:1;
+      min-width:230px;
+      background:var(--card);
+      padding:20px;
+      border-radius:20px;
+      box-shadow:0 8px 30px rgba(0,0,0,0.08);
+      text-align:center;
+      transition:transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,0.1)}
+    .card img{max-width:90px;margin-bottom:10px}
+    .card h3{margin:4px 0 10px;font-size:20px}
+    .btn{
+      display:inline-block;
+      padding:10px 16px;
+      border-radius:10px;
+      background:linear-gradient(90deg,var(--accent),var(--accent2));
+      color:white;
+      font-weight:600;
+      text-decoration:none;
+      border:none;
+      cursor:pointer;
+      transition:opacity 0.2s ease;
+    }
+    .btn:hover{opacity:0.9}
+
+    .card-section{
+      display:none;
+      background:#fff;
+      padding:20px;
+      border-radius:16px;
+      box-shadow:0 4px 20px rgba(0,0,0,0.08);
+      animation:fadeIn 0.3s ease;
+      margin-top:20px;
+    }
+    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+    .form-wrap{display:flex;gap:20px;flex-wrap:wrap}
+    .left{flex:0 0 260px}
+    .preview{background:#f6f9ff;border-radius:8px;padding:8px;text-align:center}
+    video,canvas{width:100%;border-radius:6px;background:#ddd}
+    .field{margin-bottom:10px}
+    label{display:block;font-size:13px;margin-bottom:6px}
+    input,select{width:100%;padding:10px;border-radius:8px;border:1px solid #e7e7ef}
+
+    .muted{color:#666;font-size:13px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px solid #f0f0f4;text-align:left}
+    footer{text-align:center;padding:20px;color:#444;background:rgba(255,255,255,0.4);margin-top:auto}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📸 Smart Attendance</h1>
+    <nav>
+      <a href="#" data-section="home" class="active">Home</a>
+      <a href="#" data-section="register">Register</a>
+      <a href="#" data-section="attend">Attendance</a>
+      <a href="#" data-section="meal">Meal</a>
+      <a href="#" data-section="dash">Dashboard</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <!-- Home section -->
+    <section id="home-section" class="grid page-section" style="display:flex">
+      <div class="card">
+        <img src="https://cdn-icons-png.flaticon.com/512/456/456212.png">
+        <h3>Register Face</h3>
+        <p class="muted">Add student details and capture their face.</p>
+        <button class="btn" onclick="showSection('register')">Start Registration →</button>
+      </div>
+      <div class="card">
+        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
+        <h3>Mark Attendance</h3>
+        <p class="muted">Use face scan to mark present automatically.</p>
+        <button class="btn" onclick="showSection('attend')">Scan Face →</button>
+      </div>
+      <div class="card">
+  <img src="https://cdn-icons-png.flaticon.com/512/1047/1047711.png" alt="Healthy meal">
+  <h3>Mid-Day Meal</h3>
+  <p class="muted">Record meal distribution with one click.</p>
+  <button class="btn" onclick="showSection('meal')">Meal System →</button>
+</div>
+
+      <div class="card">
+        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135810.png">
+        <h3>Teacher Dashboard</h3>
+        <p class="muted">View attendance summary & stats.</p>
+        <button class="btn" onclick="showSection('dash')">View Dashboard →</button>
+      </div>
+    </section>
+
+    <!-- Register section -->
+    <section id="register-section" class="card-section page-section">
+      <h2>Face Registration</h2>
+      <div class="form-wrap">
+        <div class="left">
+          <div class="preview">
+            <video id="reg-video" autoplay muted playsinline></video>
+            <canvas id="reg-canvas" style="display:none"></canvas>
+            <div style="margin-top:8px">
+              <button class="btn" id="reg-start">Start Camera</button>
+              <button class="btn" id="reg-capture">Capture</button>
+            </div>
+          </div>
+        </div>
+        <form id="reg-form">
+          <div class="field"><label>Full Name</label><input id="stu-name" required></div>
+          <div class="field"><label>Student ID</label><input id="stu-id" required></div>
+          <div class="field"><label>Class</label><input id="stu-class"></div>
+          <div class="field"><label>Parent/Guardian</label><input id="stu-parent"></div>
+          <div class="field"><label>Notes</label><input id="stu-notes"></div>
+          <button class="btn" type="submit">Save Registration</button>
+          <div id="reg-msg" class="muted"></div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Attendance section -->
+    <section id="attend-section" class="card-section page-section">
+      <h2>Mark Attendance</h2>
+      <div style="display:flex;gap:18px;flex-wrap:wrap">
+        <div style="flex:0 0 320px">
+          <div class="preview">
+            <video id="att-video" autoplay muted playsinline></video>
+            <canvas id="att-canvas" style="display:none"></canvas>
+            <div style="margin-top:8px">
+              <button class="btn" id="att-start">Start Camera</button>
+              <button class="btn" id="att-scan">Scan & Mark</button>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1">
+          <h4>Recent Activity</h4>
+          <div id="att-result" class="muted">No scans yet.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Meal section -->
+    <section id="meal-section" class="card-section page-section">
+  <h2>🍽 Mid-Day Meal Attendance</h2>
+  <div class="meal-grid">
+    <div class="preview">
+      <video id="meal-video" autoplay playsinline></video>
+      <canvas id="meal-canvas" style="display:none"></canvas>
+      <div style="margin-top:8px">
+        <button class="btn" id="meal-start">Start Camera</button>
+        <button class="btn" id="meal-scan">Scan Face → Mark Meal</button>
+      </div>
+      <p class="muted" style="margin-top:8px">
+        Place the student in front of the camera and click "Scan Face".
+      </p>
+    </div>
+    <div style="flex:1">
+      <h4>Meal Log</h4>
+      <div id="meal-result" class="muted">No scans yet.</div>
+    </div>
+  </div>
+</section>
+
+
+    <!-- Dashboard section -->
+    <section id="dash-section" class="card-section page-section">
+  <h2>📊 Teacher Dashboard</h2>
+
+  <!-- Summary cards -->
+  <div class="stats-grid">
+    <div class="stat-card total">
+      <h3 id="dash-total">0</h3>
+      <p>Total Students</p>
+    </div>
+    <div class="stat-card present">
+      <h3 id="dash-present">0</h3>
+      <p>Present</p>
+    </div>
+    <div class="stat-card absent">
+      <h3 id="dash-absent">0</h3>
+      <p>Absent</p>
+    </div>
+    <div class="stat-card percent">
+      <h3 id="dash-percent">0%</h3>
+      <p>Attendance %</p>
+    </div>
+  </div>
+
+  <!-- Filter tools -->
+  <div class="dash-filters">
+    <input type="date" id="dash-date" />
+    <input type="text" id="dash-search" placeholder="🔍 Search student..." />
+  </div>
+
+  <!-- Table -->
+  <table id="att-table">
+    <thead>
+      <tr>
+        <th>Roll No</th>
+        <th>Name</th>
+        <th>Status</th>
+        <th>Last Attendance</th>
+        <th>Meal</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+  </main>
+
+  <footer>🚀 Built for demo — works fully offline in your browser.</footer>
+
+<script>
+const DB={key:'smart_attendance_prof_v1',load(){return JSON.parse(localStorage.getItem(this.key)||'{}')},save(d){localStorage.setItem(this.key,JSON.stringify(d))}}
+function ensureDB(){let d=DB.load();if(!d.students)d.students=[];if(!d.attendance)d.attendance=[];if(!d.meals)d.meals=[];DB.save(d);}ensureDB();
+
+function showSection(section){
+  document.querySelectorAll('.page-section').forEach(sec=>sec.style.display='none');
+  document.querySelectorAll('nav a').forEach(link=>link.classList.remove('active'));
+  if(section==='home'){
+    document.getElementById('home-section').style.display='flex';
+    document.querySelector('nav a[data-section="home"]').classList.add('active');
+    stopCamera(regVideo);stopCamera(attVideo);
+  }else{
+    document.getElementById(section+'-section').style.display='block';
+    document.querySelector(`nav a[data-section="${section}"]`).classList.add('active');
+  }
+}
+
+// camera helpers
+async function startCamera(v){try{const s=await navigator.mediaDevices.getUserMedia({video:true});v.srcObject=s;await v.play();return true}catch(e){alert('Camera access denied');return false}}
+function stopCamera(v){if(v && v.srcObject){v.srcObject.getTracks().forEach(t=>t.stop());v.srcObject=null}}
+function captureToDataURL(v,c,w=200,h=200){c.width=w;c.height=h;c.getContext('2d').drawImage(v,0,0,w,h);return c.toDataURL('image/jpeg',0.8)}
+function dataURLToImageData(d){return new Promise(res=>{const i=new Image();i.onload=()=>{const c=document.createElement('canvas');c.width=100;c.height=100;const cx=c.getContext('2d');cx.drawImage(i,0,0,100,100);res(cx.getImageData(0,0,100,100));};i.src=d})}
+function imageDataToGray(a){const o=new Float32Array(a.data.length/4);for(let i=0,j=0;i<a.data.length;i+=4,j++){o[j]=(a.data[i]*0.299+a.data[i+1]*0.587+a.data[i+2]*0.114)/255.0}return o}
+function compareImages(a,b){const g1=imageDataToGray(a),g2=imageDataToGray(b);let s=0;for(let i=0;i<g1.length;i++)s+=Math.abs(g1[i]-g2[i]);return s/g1.length}
+
+// register
+const regVideo=document.getElementById('reg-video'),regCanvas=document.getElementById('reg-canvas');
+document.getElementById('reg-start').onclick=async()=>{if(!regVideo.srcObject)await startCamera(regVideo);else stopCamera(regVideo)};
+document.getElementById('reg-capture').onclick=()=>{const url=captureToDataURL(regVideo,regCanvas,300,300);regCanvas.dataset.photo=url;regCanvas.style.display='block';}
+document.getElementById('reg-form').onsubmit=e=>{e.preventDefault();const name=document.getElementById('stu-name').value,id=document.getElementById('stu-id').value;const photo=regCanvas.dataset.photo;if(!photo)return alert('Capture a face first');const db=DB.load();db.students.push({name,id,photo});DB.save(db);alert('Student saved');updateMealSelect();updateDash();}
+
+// attendance
+const attVideo=document.getElementById('att-video'),attCanvas=document.getElementById('att-canvas');
+document.getElementById('att-start').onclick=async()=>{if(!attVideo.srcObject)await startCamera(attVideo);else stopCamera(attVideo)};
+document.getElementById('att-scan').onclick=async()=>{const captured=captureToDataURL(attVideo,attCanvas,200,200);const db=DB.load();if(db.students.length===0)return alert('No students');const capturedData=await dataURLToImageData(captured);let best=null,bestScore=Infinity;for(const s of db.students){const ref=await dataURLToImageData(s.photo);const score=compareImages(capturedData,ref);if(score<bestScore){bestScore=score;best=s}}if(bestScore<0.18){db.attendance.push({id:best.id,date:new Date().toISOString().slice(0,10)});DB.save(db);document.getElementById('att-result').innerHTML=`Matched: <strong>${best.name}</strong> ✔`;updateDash();}else{document.getElementById('att-result').innerHTML=`No match. Try again.`;}}
+
+// meal
+const mealVideo = document.getElementById('meal-video');
+const mealCanvas = document.getElementById('meal-canvas');
+let mealStreamStarted = false;
+
+document.getElementById('meal-start').addEventListener('click', async () => {
+  if (!mealStreamStarted) {
+    mealStreamStarted = await startCamera(mealVideo);
+    document.getElementById('meal-start').textContent = 'Stop Camera';
+  } else {
+    stopCamera(mealVideo);
+    mealStreamStarted = false;
+    document.getElementById('meal-start').textContent = 'Start Camera';
+  }
+});
+
+document.getElementById('meal-scan').addEventListener('click', async () => {
+  const captured = captureToDataURL(mealVideo, mealCanvas, 200, 200);
+  document.getElementById('meal-result').textContent = 'Scanning for meal attendance...';
+
+  const db = JSON.parse(localStorage.getItem('smart_attendance_prof_v1')) || {students: [], meals: []};
+  if (!db.students || db.students.length === 0) {
+    document.getElementById('meal-result').textContent = 'No registered students found!';
+    return;
+  }
+
+  const capturedData = await dataURLToImageData(captured);
+  let best = null;
+  let bestScore = Infinity;
+
+  for (const s of db.students) {
+    const refData = await dataURLToImageData(s.photo);
+    const score = compareImages(capturedData, refData);
+    if (score < bestScore) {
+      bestScore = score;
+      best = s;
+    }
+  }
+
+  if (best && bestScore < 0.18) {
+    const today = new Date().toISOString().slice(0, 10);
+    db.meals = db.meals || [];
+    db.meals.push({id: best.id, name: best.name, date: today, time: new Date().toLocaleTimeString()});
+    localStorage.setItem('smart_attendance_prof_v1', JSON.stringify(db));
+
+    document.getElementById('meal-result').innerHTML =
+      `✅ Meal marked for <strong>${best.name}</strong> (ID: ${best.roll || best.id})`;
+  } else {
+    document.getElementById('meal-result').innerHTML =
+      `⚠ No match found (score ${bestScore.toFixed(3)}). Try again with a clearer image.`;
+  }
+});
+
+// dashboard
+function updateDashboard() {
+  const db = JSON.parse(localStorage.getItem('smart_attendance_prof_v1')) || {students: [], attendance: {}};
+  const students = db.students;
+  const selectedDate = document.getElementById('dash-date').value || new Date().toISOString().split('T')[0];
+  const todayAttendance = db.attendance[selectedDate] || {};
+  
+  const tbody = document.querySelector("#att-table tbody");
+  tbody.innerHTML = "";
+
+  let present = 0;
+  let absent = 0;
+
+  students.forEach(student => {
+    const isPresent = todayAttendance[student.id];
+    if (isPresent) present++; else absent++;
+
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${student.roll}</td>
+      <td>${student.name}</td>
+      <td>${isPresent ? `<span class="badge-present">Present</span>` : `<span class="badge-absent">Absent</span>`}</td>
+      <td>${student.lastAttendance || "—"}</td>
+      <td>${student.mealGiven ? "✅" : "❌"}</td>
+    `;
+    tbody.appendChild(row);
+  });
+
+  document.getElementById("dash-total").textContent = students.length;
+  document.getElementById("dash-present").textContent = present;
+  document.getElementById("dash-absent").textContent = absent;
+  document.getElementById("dash-percent").textContent =
+    students.length > 0 ? Math.round((present / students.length) * 100) + "%" : "0%";
+}
+
+// Search filter
+document.getElementById("dash-search").addEventListener("input", e => {
+  const query = e.target.value.toLowerCase();
+  document.querySelectorAll("#att-table tbody tr").forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(query) ? "" : "none";
+  });
+});
+
+// Date filter
+document.getElementById("dash-date").addEventListener("change", updateDashboard);
+
+
+document.querySelectorAll('nav a').forEach(link=>link.addEventListener('click',e=>{e.preventDefault();showSection(link.dataset.section)}));
+</script>
+</body>
+</html>
